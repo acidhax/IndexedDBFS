@@ -332,7 +332,7 @@ IndexedDBFs.prototype.setBytes = function(fileName, buffer, startPos, cb) {
     currentChunk++;
 
     if(currentChunk > endChunk) {
-      cb(null);
+      cb && cb(null);
       return;
     }
 
@@ -381,7 +381,7 @@ IndexedDBFs.prototype.setBytes = function(fileName, buffer, startPos, cb) {
         self._setChunk(fileName, currentChunk, chunk.buffer, process);
 
       } else {
-        cb(err);
+        cb && cb(err);
       }
     });
   }
