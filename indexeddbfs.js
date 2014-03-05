@@ -382,7 +382,7 @@ IndexedDBFs.prototype._setBytes = function(filename, buffer, startPos, cb) {
         var slice = new Uint8Array(buffer.slice(sliceStart, sliceEnd));
         chunk.set(slice, startInChunk);
 
-        self._setChunk(filename, currentChunk, chunk.buffer, process);
+        self._setChunk(filename, currentChunk, chunk, process);
 
       } else {
         cb && cb(err);
@@ -432,15 +432,15 @@ IndexedDBFs.prototype.getBytes = function(filename, startPos, endPos, cb) {
     self._getChunk(filename, currentChunk, function(err, chunk) {
       if (!err) {
         if (!chunk) {
-          chunk = new Uint8Array(self.chunkSize).buffer;
+          chunk = new Uint8Array(self.chunkSize);
         } else if (chunk.byteLength < self.chunkSize) {
           var swap = new Uint8Array(self.chunkSize);
           swap.set(new Uint8Array(chunk), 0);
-          chunk = swap.buffer;
+          chunk = swap;
         }
 
 
-        chunk = chunk.slice(startInChunk, endInChunk);
+        chunk = chunk.subarray(startInChunk, endInChunk);
         var swapArray = new Uint8Array(outArray.length + chunk.byteLength);
         swapArray.set(outArray, 0);
         swapArray.set(new Uint8Array(chunk), outArray.length);
