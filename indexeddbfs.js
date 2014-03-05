@@ -158,8 +158,12 @@ IndexedDBFs.prototype.getFile = function(fileName, cb) {
   var self = this;
   self._getDataType(fileName, function(err, dataType) {
     if (!err) {
-      if (dataType && dataType.toLowerCase() === 'string') {
-        self._getString(fileName, cb);
+      if (dataType) {
+        if (dataType.toLowerCase() === 'string') {
+          self._getString(fileName, cb);
+        } else if (dataType.toLowerCase() === 'arraybuffer') {
+          self._getBuffer(fileName, cb);
+        }
       } else {
         cb('no data type - unable to process');
       }
@@ -182,6 +186,34 @@ IndexedDBFs.prototype._getString = function(fileName, cb) {
           process();
         } else {
           cb(null, stringData);
+        }
+      } else {
+        cb(err);
+      }
+    });
+  }
+
+  process();
+};
+
+IndexedDBFs.prototype._getBuffer = function(fileName, cb) {
+  var self = this;
+  var chunkNum = -1;
+  var outArray = new Uint8Array(0);
+  function process() {
+    chunkNum++;
+    self._getChunk(fileName, chunkNum, function(err, chunk) {
+      if (!err) {
+        if (chunk) {
+          var append = new Uint8Array(chunk);
+          var swapArray = new Uint8Array(append.length + outArray.length);
+          swapArray.set(outArray, 0);
+          swapArray.set(append, outArray.length);
+          outArray = swapArray;
+
+          process();
+        } else {
+          cb(null, outArray.buffer);
         }
       } else {
         cb(err);

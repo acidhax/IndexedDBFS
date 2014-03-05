@@ -25,7 +25,10 @@
 				checkFileList,
 				createFileForStringData,
 				saveStringData,
-				getStringData
+				getStringData,
+				createFileForArrayBuffer,
+				saveArrayBuffer,
+				getArrayBuffer
     		], function(err) {
     			console.log('Test done, err?', err);
     		})
@@ -134,6 +137,42 @@
     			}
     		})
     	};
+
+    	
+
+		function createFileForArrayBuffer(cb) {
+			console.log('createFileForArrayBuffer');
+			db.createFile('aFileForTheArrayBuffer', { someData: 123123 }, cb);
+		}
+
+		var str = 'woginewoi gnweoi angweoi ngoewian iuewan iuwea nowenaiognewaoingweoia goiwea weg wea gwe';
+    	var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+		var bufView = new Uint16Array(buf);
+		for (var i=0, strLen=str.length; i<strLen; i++) {
+			bufView[i] = str.charCodeAt(i);
+		}
+    	function saveArrayBuffer(cb) {
+    		console.log('saveArrayBuffer');
+    		db.save('aFileForTheArrayBuffer', buf, cb);
+    	}
+
+    	function getArrayBuffer(cb) {
+    		console.log('getArrayBuffer');
+    		db.getFile('aFileForTheArrayBuffer', function(err, file) {
+    			if (!err && file && file instanceof ArrayBuffer) {
+    				var testVal = String.fromCharCode.apply(null, new Uint16Array(file));
+
+    				if (testVal === str) {
+    					cb();
+    				} else {
+    					console.log(testVal);
+    					cb('array buffer doesnt match source');
+    				}
+    			} else {
+    				cb(err || 'something went horribly wrong');
+    			}
+    		});
+    	}
     </script>
 </body>
 </html>
