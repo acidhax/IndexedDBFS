@@ -519,7 +519,9 @@ IndexedDBFs.prototype._queueOperation = function(filename, operation, args, cb) 
 
     if (!self._fileOperationIds[filename]) {
       self._fileOperationIds[filename] = [{guid: guid, cb: cb }];
-      self._processQueue(filename);
+      requestAnimationFrame(function() {
+        self._processQueue(filename);
+      });
 
     } else {
       self._fileOperationIds[filename].push({ guid: guid, cb: cb });
