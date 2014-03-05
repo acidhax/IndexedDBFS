@@ -550,7 +550,8 @@ IndexedDBFs.prototype._processQueue = function(filename) {
 
       self._fileOperations.remove(op.guid, function() {});
 
-      self[operation.operation].apply(self, operation.args)
+      self[operation.operation].apply(self, operation.args);
+      delete operation.args;
     });
   } else {
     this._fileOperationIds[filename] = null;
