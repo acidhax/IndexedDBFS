@@ -251,8 +251,10 @@
     		db.getBytes('someRangeStuff', 0, 30, function(err, range) {
     			if (!err && range) {
     				var temp = new Uint8Array(range);
-    				if (temp[0] === 0 && temp[1] === 1 && temp[9] === 9 && temp[10] === 0 && temp[14] === 4 && temp[15] === 0) {
+    				if (temp.length == 30 && temp[0] === 0 && temp[1] === 1 && temp[9] === 9 && temp[10] === 0 && temp[14] === 4 && temp[15] === 0) {
     					cb();
+    				} else {
+    					cb('someRangeStuff - Invalid range returned');
     				}
     			} else {
     				cb(err || 'someRangeStuff FAIL - no range found');

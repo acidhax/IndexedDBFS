@@ -373,12 +373,7 @@ IndexedDBFs.prototype.setBytes = function(fileName, buffer, startPos, cb) {
 
         var slice = new Uint8Array(buffer.slice(sliceStart, sliceEnd));
 
-        console.log('***********************************************************');
-        console.log(chunkSize, slice.length);
-        console.log(chunk);
-        console.log(slice);
         chunk.set(slice, startInChunk);
-        console.log(chunk);
 
         self._setChunk(fileName, currentChunk, chunk.buffer, process);
 
@@ -392,7 +387,46 @@ IndexedDBFs.prototype.setBytes = function(fileName, buffer, startPos, cb) {
 };
 
 IndexedDBFs.prototype.getBytes = function(fileName, startPos, endPos, cb) {
+  var self = this;
+  var startChunk = Math.floor(startPos / this.chunkSize);
+  var endChunk = Math.floor(endPos / this.chunkSize);
+  var currentChunk = startChunk - 1;
 
+  var outArray = new Uint8Array(0);
+
+  function process() {
+    currentChunk++;
+    if (currentChunk > endChunk) {
+      cb(null, outArray.buffer);
+      return;
+    }
+    
+    var startInChunk = 0;
+    var endInChunk = self.chunkSize;
+
+    if (startChunk === currentChunk) {
+      startInChunk = startPos % self.chunkSize;
+    }
+
+    if (endChunk === currentChunk) {
+      endInChunk = (startPos + endPos) % self.chunkSize
+    }
+
+    self._getChunk(fileName, currentChunk, function(err, chunk) {
+      if (!err) {
+        chunk = chunk.slice(startInChunk, endInChunk);
+        var swapArray = new Uint8Array(outArray.length + chunk.byteLength);
+        swapArray.set(outArray, 0);
+        swapArray.set(new Uint8Array(chunk), outArray.length);
+        outArray = swapArray;
+        process();
+      } else {
+        cb(err);
+      }
+    });
+  }
+
+  process();
 };
 
 IndexedDBFs.prototype.appendBytes = function(fileName, buffer, cb) {
