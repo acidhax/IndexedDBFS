@@ -101,7 +101,7 @@ IndexedDBFs.prototype.nukeEverything = function(areYouSure, cb) {
   if (areYouSure === 'yesplx') {
     this._fileList.nuke();
     this._fileData.nuke();
-    setTimeout(cb, 100);
+    cb && setTimeout(cb, 100);
   }
 };
 
