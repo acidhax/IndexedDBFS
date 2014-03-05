@@ -355,8 +355,8 @@ IndexedDBFs.prototype.setBytes = function(fileName, buffer, startPos, cb) {
 
         if(!chunk) {          
           chunk = new Uint8Array(chunkSize + startInChunk);
-        } else if(chunk.length < chunkSize) {
-          var swapArray = new Uint8Array(chunkSize + startInChunk);
+        } else if(chunk.length < endInChunk) {
+          var swapArray = new Uint8Array(endInChunk);
           swapArray.set(chunk, 0);
           chunk = swapArray;
         }
@@ -368,11 +368,12 @@ IndexedDBFs.prototype.setBytes = function(fileName, buffer, startPos, cb) {
           sliceStart += startPos % self.chunkSize;
           sliceEnd += startPos % self.chunkSize;
         } else {
-          sliceEnd -= startPos % self.chunkSize;
+          //sliceEnd -= startPos % self.chunkSize;
         }
 
-        var slice = new Uint8Array(buffer.slice(sliceStart, sliceEnd));
 
+
+        var slice = new Uint8Array(buffer.slice(sliceStart, sliceEnd));
         chunk.set(slice, startInChunk);
 
         self._setChunk(fileName, currentChunk, chunk.buffer, process);
@@ -409,11 +410,22 @@ IndexedDBFs.prototype.getBytes = function(fileName, startPos, endPos, cb) {
     }
 
     if (endChunk === currentChunk) {
-      endInChunk = (startPos + endPos) % self.chunkSize
+      endInChunk = endPos % self.chunkSize
     }
 
     self._getChunk(fileName, currentChunk, function(err, chunk) {
       if (!err) {
+        if (!chunk) {
+          chunk = new Uint8Array(self.chunkSize).buffer;
+        } else if (chunk.byteLength < self.chunkSize) {
+          var swap = new Uint8Array(self.chunkSize);
+          swap.set(new Uint8Array(chunk), 0);
+          chunk = swap.buffer;
+        }
+
+
+        console.log(currentChunk, startInChunk, endInChunk);
+
         chunk = chunk.slice(startInChunk, endInChunk);
         var swapArray = new Uint8Array(outArray.length + chunk.byteLength);
         swapArray.set(outArray, 0);

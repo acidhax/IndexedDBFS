@@ -35,7 +35,13 @@
 				setRange1,
 				setRange2,
 				setRange3,
-				getRange
+				getRange,
+				createSomeOtherRangeFile,
+				setSomeOtherRangeFile1,
+				setSomeOtherRangeFile2,
+				setSomeOtherRangeFile3,
+				getSomeOtherRange,
+				getSomeOtherRange2
     		], function(err) {
     			if (err) {
     				console.log('#################################################');
@@ -261,6 +267,69 @@
     			}
     		});
     	}
+
+
+
+
+    	var emptyRange1 = new Uint8Array(15);
+    	for (var n = 0 ; n < emptyRange1.length; n++) {
+    		emptyRange1[n] = n % 1024;
+    	}
+
+    	function createSomeOtherRangeFile(cb) {
+    		console.log('createRangeFile');
+    		db.createFile('someRangeStuffzorz', cb);
+    	}
+
+		function setSomeOtherRangeFile1(cb) {
+    		console.log('setSomeOtherRangeFile1');
+    		db.setBytes('someRangeStuffzorz', emptyRange1.buffer, 1, cb);
+    	}
+
+    	function setSomeOtherRangeFile2(cb) {
+    		console.log('setSomeOtherRangeFile2');
+    		db.setBytes('someRangeStuffzorz', emptyRange1.buffer, 1020, cb);
+    	}
+
+    	function setSomeOtherRangeFile3(cb) {
+    		console.log('setSomeOtherRangeFile3');
+    		db.setBytes('someRangeStuffzorz', emptyRange1.buffer, 4000, cb);
+    	}
+
+    	function getSomeOtherRange(cb) {
+    		console.log('getSomeOtherRange');
+    		db.getBytes('someRangeStuffzorz', 0, 101, function(err, range) {
+    			if (!err && range) {
+    				var temp = new Uint8Array(range);
+    				console.log(temp);
+    				if (temp.length == 101 && temp[0] === 0 && temp[1] === 0 && temp[2] === 1 & temp[100] === 0) {
+    					cb();
+    				} else {
+    					cb('someRangeStuff - Invalid range returned');
+    				}
+    			} else {
+    				cb(err || 'someRangeStuff FAIL - no range found');
+    			}
+    		});
+    	}
+
+    	function getSomeOtherRange2(cb) {
+    		console.log('getSomeOtherRange');
+    		db.getBytes('someRangeStuffzorz', 10, 4002, function(err, range) {
+    			if (!err && range) {
+    				var temp = new Uint8Array(range);
+    				console.log(temp);
+    				if (temp.length == 3992 && temp[4001 - 10] === 1) {
+    					cb();
+    				} else {
+    					cb('someRangeStuff - Invalid range returned');
+    				}
+    			} else {
+    				cb(err || 'someRangeStuff FAIL - no range found');
+    			}
+    		});
+    	}
+
     </script>
 </body>
 </html>
