@@ -527,7 +527,8 @@ IndexedDBFs.prototype._queueOperation = function(filename, operation, args, cb) 
       self._fileOperationIds[filename].push({ guid: guid, cb: cb });
     }
   });
-  
+
+  args = null;  
 };
 
 IndexedDBFs.prototype._processQueue = function(filename) {
@@ -551,9 +552,9 @@ IndexedDBFs.prototype._processQueue = function(filename) {
       self._fileOperations.remove(op.guid, function() {});
 
       self[operation.operation].apply(self, operation.args);
-      delete operation.args;
-      delete operation;
-      delete op;
+      operation.args = null;
+      operation = null;
+      op = null;
     });
   } else {
     this._fileOperationIds[filename] = null;
