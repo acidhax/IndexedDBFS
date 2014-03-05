@@ -22,7 +22,10 @@
 				getFileData,
 				deleteFile,
 				checkDeleteFile,
-				checkFileList
+				checkFileList,
+				createFileForStringData,
+				saveStringData,
+				getStringData
     		], function(err) {
     			console.log('Test done, err?', err);
     		})
@@ -71,7 +74,7 @@
 
     	function getFileData(cb) {
     		console.log('getFileData');
-    		db.getFile('someotherstuff', function(err, file) {
+    		db.getFileData('someotherstuff', function(err, file) {
     			if (file && file.data && file.data.someData && file.data.someData === 123123) {
     				cb();
     			} else {
@@ -106,6 +109,30 @@
     				cb('checkFileList --- file list is WRONG MOFO');
     			}
     		});
+    	};
+
+
+    	function createFileForStringData(cb) {
+    		console.log('createFileForStringData');
+    		db.createFile('fileWithStringData', cb);
+    	}
+
+    	var _stringData = 'this is a string that has a bunch of text in it, yes it does... I really hope we can reassemble this you know what I mean, yo?!?!?!?!?!?';
+    	function saveStringData(cb) {
+    		console.log('saveStringData');
+    		db.save('fileWithStringData', _stringData, cb);
+    	}
+
+    	function getStringData(cb) {
+    		console.log('getStringData');
+    		db.getFile('fileWithStringData', function(err, stringData) {
+    			if (!err && stringData && stringData === _stringData) {
+    				cb();
+    			} else {
+    				console.log('err', stringData);
+    				cb('getStringData --- super FAIL');
+    			}
+    		})
     	};
     </script>
 </body>
