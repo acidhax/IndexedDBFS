@@ -1,4 +1,10 @@
 var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+var generateGuid = function() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+      return v.toString(16);
+  });
+}
 /**
  * IndexedDBFs - a simple Javascript filesystem that allows you to store strings, blobs, arrays, array buffers and
  * access them like long-term storage.
@@ -9,8 +15,8 @@ var IndexedDBFs = function (options) {
   options = options || {};
 
 	this.chunkSize = options.chunkSize || 1024;
-  this._fileOperations = {};
   this._fileSizes = {};
+  this._fileOperationIds = {};
 
   var self = this
   new Lawnchair({ adapter:'indexed-db', name: 'files', record: 'file' }, function() { 
@@ -19,6 +25,9 @@ var IndexedDBFs = function (options) {
   new Lawnchair({ adapter:'indexed-db', name: 'fileData', record: 'fileChunk'}, function() { 
     self._fileData = this; 
   });
+  new Lawnchair({ adapter:'indexed-db', name: 'fileOperations', record: 'fileOperation' }, function() {
+    self._fileOperations = this;
+  })
 }
 
 
@@ -503,30 +512,45 @@ IndexedDBFs.prototype.appendBytes = function(filename, buffer, cb) {
 };
 
 IndexedDBFs.prototype._queueOperation = function(filename, operation, args, cb) {
-  if (!this._fileOperations[filename]) {
-    this._fileOperations[filename] = [{ operation: operation, args: args, cb: cb }];
-    this._processQueue(filename);
-  } else {
-    this._fileOperations[filename].push({ operation: operation, args: args, cb: cb });  
-  }  
+  var self = this;
+  var guid = generateGuid();
+
+  this._fileOperations.save({ key: guid, operation: operation, args: args }, function() {
+
+    if (!self._fileOperationIds[filename]) {
+      self._fileOperationIds[filename] = [{guid: guid, cb: cb }];
+      self._processQueue(filename);
+
+    } else {
+      self._fileOperationIds[filename].push({ guid: guid, cb: cb });
+    }
+  });
+  
 };
 
 IndexedDBFs.prototype._processQueue = function(filename) {
   var self = this;
-  if (this._fileOperations[filename].length) {
-    var operation = this._fileOperations[filename].shift();
+
+  if (this._fileOperationIds[filename].length) {
+    var op = this._fileOperationIds[filename].shift();
     
-    operation.args.push(function() {
-      var args = [].slice.call(arguments);
-      operation.cb && operation.cb.apply(null, args);
+    this._fileOperations.get(op.guid, function(operation) {
+      operation.cb = op.cb;
 
-      requestAnimationFrame(function() {
-        self._processQueue(filename);
-      });
-    })
+      operation.args.push(function() {
+        var args = [].slice.call(arguments);
+        operation.cb && operation.cb.apply(null, args);
 
-    this[operation.operation].apply(this, operation.args)
+        requestAnimationFrame(function() {
+          self._processQueue(filename);
+        });
+      })
+
+      self._fileOperations.remove(op.guid, function() {});
+
+      self[operation.operation].apply(self, operation.args)
+    });
   } else {
-    this._fileOperations[filename] = null;
+    this._fileOperationIds[filename] = null;
   }
 };
