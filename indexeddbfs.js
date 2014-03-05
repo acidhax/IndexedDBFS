@@ -10,6 +10,7 @@ var IndexedDBFs = function (options) {
 
 	this.chunkSize = options.chunkSize || 1024;
   this._fileOperations = {};
+  this._fileSizes = {};
 
   var self = this
   new Lawnchair({ adapter:'indexed-db', name: 'files', record: 'file' }, function() { 
@@ -454,25 +455,30 @@ IndexedDBFs.prototype.getBytes = function(filename, startPos, endPos, cb) {
 
 
 IndexedDBFs.prototype.setMaxByte = function(filename, max, cb) {
-  var self = this;
-  this.getFileData(filename, function(err, file) {
-    if (!err && file) {
-      if (!file.size || file.size < max) {
-        file.size = max;
-        self._fileList.save(file, cb || function() {});
-      } else {
-        cb && cb();
-      }
-    } else {
-      cb && cb(err || 'file not found');
-    }
-  });
+  if (!this._fileSizes[filename] || this._fileSizes[filename] < max) {
+    this._fileSizes[filename] = max;
+  }
+  cb && cb(null);
+  // var self = this;
+  // this.getFileData(filename, function(err, file) {
+  //   if (!err && file) {
+  //     if (!file.size || file.size < max) {
+  //       file.size = max;
+  //       self._fileList.save(file, cb || function() {});
+  //     } else {
+  //       cb && cb();
+  //     }
+  //   } else {
+  //     cb && cb(err || 'file not found');
+  //   }
+  // });
 }
 
 IndexedDBFs.prototype.getMaxByte = function(filename, cb) {
-  this.getFileData(filename, function(err, file) {
-    cb(err, file?file.size:null);
-  });
+  cb(null, this._fileSizes[filename]);
+  // this.getFileData(filename, function(err, file) {
+  //   cb(err, file?file.size:null);
+  // });
 };
 
 
