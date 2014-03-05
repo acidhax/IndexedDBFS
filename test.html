@@ -41,7 +41,8 @@
 				setSomeOtherRangeFile2,
 				setSomeOtherRangeFile3,
 				getSomeOtherRange,
-				getSomeOtherRange2
+				getSomeOtherRange2,
+				getSomeOtherRange3
     		], function(err) {
     			if (err) {
     				console.log('#################################################');
@@ -314,12 +315,28 @@
     	}
 
     	function getSomeOtherRange2(cb) {
-    		console.log('getSomeOtherRange');
+    		console.log('getSomeOtherRange2');
     		db.getBytes('someRangeStuffzorz', 10, 4002, function(err, range) {
     			if (!err && range) {
     				var temp = new Uint8Array(range);
-    				console.log(temp);
     				if (temp.length == 3992 && temp[4001 - 10] === 1) {
+    					cb();
+    				} else {
+    					cb('someRangeStuff - Invalid range returned');
+    				}
+    			} else {
+    				cb(err || 'someRangeStuff FAIL - no range found');
+    			}
+    		});
+    	}
+
+    	function getSomeOtherRange3(cb) {
+    		console.log('getSomeOtherRange3');
+    		db.getBytes('someRangeStuffzorz', 4000, 5000, function(err, range) {
+    			if (!err && range) {
+    				var temp = new Uint8Array(range);
+    				console.log(temp);
+    				if (temp.length == 15) {
     					cb();
     				} else {
     					cb('someRangeStuff - Invalid range returned');

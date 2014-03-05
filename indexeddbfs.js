@@ -326,6 +326,8 @@ IndexedDBFs.prototype.setBytes = function(fileName, buffer, startPos, cb) {
   var endChunk = Math.floor((startPos + buffer.byteLength) / this.chunkSize);
   var currentChunk = startChunk - 1;
 
+  this.setMaxByte(fileName, startPos + buffer.byteLength);
+
   function process() {
     currentChunk++;
 
@@ -389,11 +391,23 @@ IndexedDBFs.prototype.setBytes = function(fileName, buffer, startPos, cb) {
 
 IndexedDBFs.prototype.getBytes = function(fileName, startPos, endPos, cb) {
   var self = this;
-  var startChunk = Math.floor(startPos / this.chunkSize);
-  var endChunk = Math.floor(endPos / this.chunkSize);
-  var currentChunk = startChunk - 1;
+  var startChunk;
+  var endChunk;
+  var currentChunk;
 
   var outArray = new Uint8Array(0);
+
+  this.getMaxByte(fileName, function(err, max) {
+    if (!err && max) {
+      endPos = (endPos > max)?max:endPos;
+      startChunk = Math.floor(startPos / self.chunkSize);
+      endChunk = Math.floor(endPos / self.chunkSize);
+      currentChunk = startChunk - 1;
+      process();
+    } else {
+      cb(err || 'data not found');
+    }
+  });
 
   function process() {
     currentChunk++;
@@ -424,8 +438,6 @@ IndexedDBFs.prototype.getBytes = function(fileName, startPos, endPos, cb) {
         }
 
 
-        console.log(currentChunk, startInChunk, endInChunk);
-
         chunk = chunk.slice(startInChunk, endInChunk);
         var swapArray = new Uint8Array(outArray.length + chunk.byteLength);
         swapArray.set(outArray, 0);
@@ -437,8 +449,29 @@ IndexedDBFs.prototype.getBytes = function(fileName, startPos, endPos, cb) {
       }
     });
   }
+};
 
-  process();
+
+IndexedDBFs.prototype.setMaxByte = function(fileName, max, cb) {
+  var self = this;
+  this.getFileData(fileName, function(err, file) {
+    if (!err && file) {
+      if (!file.size || file.size < max) {
+        file.size = max;
+        self._fileList.save(file, cb || function() {});
+      } else {
+        cb && cb();
+      }
+    } else {
+      cb && cb(err || 'file not found');
+    }
+  });
+}
+
+IndexedDBFs.prototype.getMaxByte = function(fileName, cb) {
+  this.getFileData(fileName, function(err, file) {
+    cb(err, file?file.size:null);
+  });
 };
 
 IndexedDBFs.prototype.appendBytes = function(fileName, buffer, cb) {
