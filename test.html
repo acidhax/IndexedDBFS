@@ -129,7 +129,7 @@
     			if (!err && stringData && stringData === _stringData) {
     				cb();
     			} else {
-    				console.log('err', stringData);
+    				console.log('err', err, stringData);
     				cb('getStringData --- super FAIL');
     			}
     		})

@@ -85,10 +85,21 @@ IndexedDBFs.prototype._setChunk = function(fileName, chunkNum, chunk, cb) {
 
 
 IndexedDBFs.prototype.save = function(fileName, fileData, cb) {
+  var toCall = null;
+
   if (typeof fileData === 'string') {
-    this._saveString(fileName, fileData, cb);
-  } else {
+    toCall = this._saveString;
+  } else if (fileData instanceof ArrayBuffer) {
+    toCall = this._saveBuffer;
+  }
+
+  if (!toCall) {
     cb('Invalid data to save');
+  } else {
+    var self = this;
+    this._setDataType(fileName, fileData.constructor.name, function(err) {
+      toCall.call(self, fileName, fileData, cb);
+    });
   }
 };
 
@@ -99,14 +110,7 @@ IndexedDBFs.prototype._saveString = function(fileName, stringData, cb) {
     array[i] = stringData.charCodeAt(i);
   }
   
-  var self = this;
-  this._setDataType(fileName, 'string', function(err) {
-    if (err) {
-      self._saveBuffer(fileName, arrayBuffer, cb);
-    } else {
-      cb && cb(err);
-    }
-  });
+  this._saveBuffer(fileName, arrayBuffer, cb);
 };
 
 IndexedDBFs.prototype._saveBuffer = function(fileName, arrayBuffer, cb) {
@@ -154,7 +158,7 @@ IndexedDBFs.prototype.getFile = function(fileName, cb) {
   var self = this;
   self._getDataType(fileName, function(err, dataType) {
     if (!err) {
-      if (dataType === 'string') {
+      if (dataType && dataType.toLowerCase() === 'string') {
         self._getString(fileName, cb);
       } else {
         cb('no data type - unable to process');
