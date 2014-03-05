@@ -125,6 +125,7 @@ IndexedDBFs.prototype.nukeEverything = function(areYouSure, cb) {
 IndexedDBFs.prototype._getChunk = function(filename, chunkNum, cb) {
   this._fileData.get(filename + '_' + chunkNum, function(chunk) {
     cb(null, chunk ? chunk.chunk : null);
+    chunk = null;
   });
 };
 
@@ -144,7 +145,9 @@ IndexedDBFs.prototype._setChunk = function(filename, chunkNum, chunk, cb) {
 
   this._fileData.save(data, function() {
     cb && cb(null);
-  })
+  });
+
+  chunk = null;
 };
 
 
@@ -373,7 +376,9 @@ IndexedDBFs.prototype._setBytes = function(filename, buffer, startPos, cb) {
         } else if(chunk.length < endInChunk) {
           var swapArray = new Uint8Array(endInChunk);
           swapArray.set(chunk, 0);
+          chunk = null;
           chunk = swapArray;
+          swapArray = null;
         }
 
         var sliceStart = ((currentChunk - startChunk) * chunkSize);
@@ -392,6 +397,7 @@ IndexedDBFs.prototype._setBytes = function(filename, buffer, startPos, cb) {
         chunk.set(slice, startInChunk);
 
         self._setChunk(filename, currentChunk, chunk, process);
+        chunk = slice = null;
 
       } else {
         cb && cb(err);
@@ -497,6 +503,7 @@ IndexedDBFs.prototype._appendBytes = function(filename, buffer, cb) {
     if (!err) {
       max = max || 0;
       self._setBytes(filename, buffer, max, cb);
+      buffer = null;
     } else {
       cb && cb(err);
     }
