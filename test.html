@@ -19,6 +19,7 @@
     			createFileNoData,
     			fileExists,
 				fileDataExists,
+				fileDoesntExist,
 				getFileData,
 				deleteFile,
 				checkDeleteFile,
@@ -30,7 +31,15 @@
 				saveArrayBuffer,
 				getArrayBuffer
     		], function(err) {
-    			console.log('Test done, err?', err);
+    			if (err) {
+    				console.log('#################################################');
+    				console.log('FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL');
+    				console.log(err);
+    				console.log('#################################################');
+    			} else {
+    				console.log('Success');
+    			}
+    			
     		})
     	}, 1000);
 
@@ -71,6 +80,17 @@
     				cb();
     			} else {
     				cb('fileDataExists FAIL');
+    			}
+    		});
+    	}
+
+    	function fileDoesntExist(cb) {
+    		console.log('fileDoesntExist');
+    		db.fileExists('Stufewagweahwrahwelkfwf', function(err, exists) {
+    			if (exists) {
+    				cb('fileDoesntExist FAIL');
+    			} else {
+    				cb();
     			}
     		});
     	}
