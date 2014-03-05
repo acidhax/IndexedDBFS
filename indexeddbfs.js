@@ -445,7 +445,7 @@ IndexedDBFs.prototype.getBytes = function(filename, startPos, endPos, cb) {
         swapArray.set(outArray, 0);
         swapArray.set(new Uint8Array(chunk), outArray.length);
         outArray = swapArray;
-        process();
+        requestAnimationFrame(process);
       } else {
         cb(err);
       }
