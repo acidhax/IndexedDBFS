@@ -321,7 +321,7 @@ IndexedDBFs.prototype._getBuffer = function(filename, cb) {
   process();
 };
 
-IndexedDBFs.prototype.setBytes = function(filename, buffer, startPos, cb) {
+IndexedDBFs.prototype._setBytes = function(filename, buffer, startPos, cb) {
   var self = this;
   var startChunk = Math.floor(startPos / this.chunkSize);
   var endChunk = Math.floor((startPos + buffer.byteLength) / this.chunkSize);
@@ -481,11 +481,15 @@ IndexedDBFs.prototype._appendBytes = function(filename, buffer, cb) {
   this.getMaxByte(filename, function(err, max) {
     if (!err) {
       max = max || 0;
-      self.setBytes(filename, buffer, max, cb);
+      self._setBytes(filename, buffer, max, cb);
     } else {
       cb && cb(err);
     }
   });
+};
+
+IndexedDBFs.prototype.setBytes = function(fileName, buffer, startPos, cb) {
+  this._queueOperation(fileName, '_setBytes', [ fileName, buffer, startPos ], cb);
 };
 
 IndexedDBFs.prototype.appendBytes = function(filename, buffer, cb) {
@@ -505,6 +509,7 @@ IndexedDBFs.prototype._processQueue = function(filename) {
   var self = this;
   if (this._fileOperations[filename].length) {
     var operation = this._fileOperations[filename].shift();
+    
     operation.args.push(function() {
       var args = [].slice.call(arguments);
       operation.cb && operation.cb.apply(null, args);
