@@ -21,6 +21,7 @@
 				fileDataExists,
 				fileDoesntExist,
 				getFileData,
+				getNoFileData,
 				deleteFile,
 				checkDeleteFile,
 				checkFileList,
@@ -105,6 +106,21 @@
     			}
     		});
     	};
+
+    	function getNoFileData(cb) {
+    		console.log('getNoFileData');
+    		db.getFileData('Stuff', function(err, file) {
+    			if (file) {
+    				if (!file.data || (file.data && Object.keys(file.data).length === 0)) {
+    					cb();
+    				} else {
+    					cb('getNoFileData FAIL - there is apparently data... wut?!');
+    				}
+    			} else {
+    				cb('getNoFileData FAIL - file not found');
+    			}
+    		});
+    	}
 
     	function deleteFile(cb) {
     		console.log('deleteFile');
