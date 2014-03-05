@@ -319,3 +319,82 @@ IndexedDBFs.prototype._getBuffer = function(fileName, cb) {
 
   process();
 };
+
+IndexedDBFs.prototype.setBytes = function(fileName, buffer, startPos, cb) {
+  var self = this;
+  var startChunk = Math.floor(startPos / this.chunkSize);
+  var endChunk = Math.floor((startPos + buffer.byteLength) / this.chunkSize);
+  var currentChunk = startChunk - 1;
+
+  function process() {
+    currentChunk++;
+
+    if(currentChunk > endChunk) {
+      cb(null);
+      return;
+    }
+
+    var startInChunk = 0;
+    var endInChunk = self.chunkSize;
+
+    if (startChunk === currentChunk) {
+      startInChunk = startPos % self.chunkSize;
+    }
+
+    if (endChunk === currentChunk) {
+      endInChunk = (startPos + buffer.byteLength) % self.chunkSize
+    }
+
+    var chunkSize = endInChunk - startInChunk;
+
+    // Get the chunk
+    self._getChunk(fileName, currentChunk, function(err, chunk) {
+      if (!err) {
+
+        chunk = chunk?new Uint8Array(chunk):null;
+
+        if(!chunk) {          
+          chunk = new Uint8Array(chunkSize + startInChunk);
+        } else if(chunk.length < chunkSize) {
+          var swapArray = new Uint8Array(chunkSize + startInChunk);
+          swapArray.set(chunk, 0);
+          chunk = swapArray;
+        }
+
+        var sliceStart = ((currentChunk - startChunk) * chunkSize);
+        var sliceEnd = sliceStart + chunkSize;
+
+        if (currentChunk !== startChunk) {
+          sliceStart += startPos % self.chunkSize;
+          sliceEnd += startPos % self.chunkSize;
+        } else {
+          sliceEnd -= startPos % self.chunkSize;
+        }
+
+        var slice = new Uint8Array(buffer.slice(sliceStart, sliceEnd));
+
+        console.log('***********************************************************');
+        console.log(chunkSize, slice.length);
+        console.log(chunk);
+        console.log(slice);
+        chunk.set(slice, startInChunk);
+        console.log(chunk);
+
+        self._setChunk(fileName, currentChunk, chunk.buffer, process);
+
+      } else {
+        cb(err);
+      }
+    });
+  }
+
+  process();
+};
+
+IndexedDBFs.prototype.getBytes = function(fileName, startPos, endPos, cb) {
+
+};
+
+IndexedDBFs.prototype.appendBytes = function(fileName, buffer, cb) {
+
+};

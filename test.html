@@ -30,7 +30,12 @@
 				getStringData,
 				createFileForArrayBuffer,
 				saveArrayBuffer,
-				getArrayBuffer
+				getArrayBuffer,
+				createRangeFile,
+				setRange1,
+				setRange2,
+				setRange3,
+				getRange
     		], function(err) {
     			if (err) {
     				console.log('#################################################');
@@ -206,6 +211,51 @@
     				}
     			} else {
     				cb(err || 'something went horribly wrong');
+    			}
+    		});
+    	}
+
+
+    	var range1 = new Uint8Array(5000);
+    	var range2 = new Uint8Array(5000);
+    	var range3 = new Uint8Array(5000);
+    	var tempArray = [];
+    	for (var n = 0; n < 5000; n++) {
+    		tempArray.push(n % 255);
+    	}
+    	range1.set(tempArray, 0);
+    	range2.set(tempArray, 0);
+    	range3.set(tempArray, 0);
+
+    	function createRangeFile(cb) {
+    		console.log('createRangeFile');
+    		db.createFile('someRangeStuff', cb);
+    	}
+    	function setRange1(cb) {
+    		console.log('setRange1');
+    		db.setBytes('someRangeStuff', range1.buffer, 0, cb);
+    	}
+
+    	function setRange2(cb) {
+    		console.log('setRange2');
+    		db.setBytes('someRangeStuff', range2.buffer, 10, cb);
+    	}
+
+    	function setRange3(cb) {
+    		console.log('setRange3');
+    		db.setBytes('someRangeStuff', range3.buffer, 15, cb);
+    	}
+
+    	function getRange(cb) {
+    		console.log('getRange');
+    		db.getBytes('someRangeStuff', 0, 30, function(err, range) {
+    			if (!err && range) {
+    				var temp = new Uint8Array(range);
+    				if (temp[0] === 0 && temp[1] === 1 && temp[9] === 9 && temp[10] === 0 && temp[14] === 4 && temp[15] === 0) {
+    					cb();
+    				}
+    			} else {
+    				cb(err || 'someRangeStuff FAIL - no range found');
     			}
     		});
     	}
