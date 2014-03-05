@@ -474,6 +474,7 @@ IndexedDBFs.prototype.getMaxByte = function(fileName, cb) {
   });
 };
 
+
 IndexedDBFs.prototype.appendBytes = function(fileName, buffer, cb) {
   var self = this;
   this.getMaxByte(fileName, function(err, max) {

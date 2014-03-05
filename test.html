@@ -42,7 +42,13 @@
 				setSomeOtherRangeFile3,
 				getSomeOtherRange,
 				getSomeOtherRange2,
-				getSomeOtherRange3
+				getSomeOtherRange3,
+				createForAppend,
+				append1,
+				append2,
+				append3,
+				append4,
+				checkAppendedFile
     		], function(err) {
     			if (err) {
     				console.log('#################################################');
@@ -302,7 +308,6 @@
     		db.getBytes('someRangeStuffzorz', 0, 101, function(err, range) {
     			if (!err && range) {
     				var temp = new Uint8Array(range);
-    				console.log(temp);
     				if (temp.length == 101 && temp[0] === 0 && temp[1] === 0 && temp[2] === 1 & temp[100] === 0) {
     					cb();
     				} else {
@@ -335,7 +340,6 @@
     		db.getBytes('someRangeStuffzorz', 4000, 5000, function(err, range) {
     			if (!err && range) {
     				var temp = new Uint8Array(range);
-    				console.log(temp);
     				if (temp.length == 15) {
     					cb();
     				} else {
@@ -347,6 +351,47 @@
     		});
     	}
 
+
+
+    	var appendArray = new Uint8Array([5, 6, 7 ,8, 9]);
+
+    	function createForAppend(cb) {
+    		console.log('createForAppend');
+    		db.createFile('appendyfiletimes', cb);
+    	}
+
+    	function append1(cb) {
+    		console.log('append1');
+    		db.appendBytes('appendyfiletimes', appendArray.buffer, cb);
+    	}
+
+    	function append2(cb) {
+    		console.log('append1');
+    		db.appendBytes('appendyfiletimes', appendArray.buffer, cb);
+    	}
+
+    	function append3(cb) {
+    		console.log('append1');
+    		db.appendBytes('appendyfiletimes', appendArray.buffer, cb);
+    	}
+
+    	function append4(cb) {
+    		console.log('append1');
+    		db.appendBytes('appendyfiletimes', appendArray.buffer, cb);
+    	}
+
+    	function checkAppendedFile(cb) {
+    		console.log('checkAppendedFile');
+    		db.getBytes('appendyfiletimes', 0, 10000, function(err, buffer) {
+    			var array = new Uint8Array(buffer);
+    			if (array.length === 20 && array[0] === 5 && array[4] === 9 && array[5] === 5 && array[19] === 9) {
+    				cb();
+    			} else {
+    				console.log(array);
+    				cb('Invalid buffer array OMGNO FAIL');
+    			}
+    		});
+    	}
     </script>
 </body>
 </html>
