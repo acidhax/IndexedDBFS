@@ -494,12 +494,14 @@ IndexedDBFs.prototype._appendBytes = function(filename, buffer, cb) {
   });
 };
 
-IndexedDBFs.prototype.setBytes = function(fileName, buffer, startPos, cb) {
-  this._queueOperation(fileName, '_setBytes', [ fileName, buffer, startPos ], cb);
+IndexedDBFs.prototype.setBytes = function(filename, buffer, startPos, cb) {
+  // this._queueOperation(filename, '_setBytes', [ filename, buffer, startPos ], cb);
+  this._setBytes(filename, buffer, startPos, cb);
 };
 
 IndexedDBFs.prototype.appendBytes = function(filename, buffer, cb) {
-  this._queueOperation(filename, '_appendBytes', [ filename, buffer ], cb);
+  //this._queueOperation(filename, '_appendBytes', [ filename, buffer ], cb);
+  this._appendBytes(filename, buffer, cb);
 };
 
 IndexedDBFs.prototype._queueOperation = function(filename, operation, args, cb) {
