@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+<head>
+    <title>Wut</title>
+</head>
+<body>
+    <script src="lib/Lawnchair.js"></script>
+    <script src="lib/indexed-db.js"></script>
+    <script src="lib/async.js"></script>
+    <script src="indexeddbfs.js"></script>
+
+    <script>
+    	var db = new IndexedDBFs();
+
+    	setTimeout(function() {
+    		async.series([
+    			nukeItAll,
+    			createFileData,
+    			createFileNoData,
+    			fileExists,
+				fileDataExists,
+				getFileData,
+				deleteFile,
+				checkDeleteFile,
+				checkFileList
+    		], function(err) {
+    			console.log('Test done, err?', err);
+    		})
+    	}, 1000);
+
+
+    	function nukeItAll(cb) {
+    		console.log('nuking everything');
+    		db.nukeEverything('yesplx', cb);
+    	}
+
+
+    	function createFileNoData(cb) {
+    		console.log('createFileNoData');
+    		db.createFile('Stuff', cb);
+    	};
+
+
+    	function createFileData(cb) {
+    		console.log('createFileNoData');
+    		db.createFile('someotherstuff', { someData: 123123 }, cb);
+    	};
+
+
+    	function fileExists(cb) {
+    		console.log('fileExists');
+    		db.fileExists('Stuff', function(err, exists) {
+    			if (exists) {
+    				cb();
+    			} else {
+    				cb('fileExists FAIL');
+    			}
+    		});
+    	}
+
+    	function fileDataExists(cb) {
+    		console.log('fileDataExists');
+    		db.fileExists('someotherstuff', function(err, exists) {
+    			if (exists) {
+    				cb();
+    			} else {
+    				cb('fileDataExists FAIL');
+    			}
+    		});
+    	}
+
+    	function getFileData(cb) {
+    		console.log('getFileData');
+    		db.getFile('someotherstuff', function(err, file) {
+    			if (file && file.data && file.data.someData && file.data.someData === 123123) {
+    				cb();
+    			} else {
+    				cb('getFileData FAIL');
+    			}
+    		});
+    	};
+
+    	function deleteFile(cb) {
+    		console.log('deleteFile');
+    		db.deleteFile('Stuff', cb);
+    	};
+
+    	function checkDeleteFile(cb) {
+    		console.log('checkDeleteFile');
+    		db.fileExists('Stuff', function(err, exists) {
+    			if (exists) {
+    				cb('checkDeleteFile --- file not deleted --- FAIL');
+    			} else {
+    				cb();
+    			}
+    		});
+    	};
+
+    	function checkFileList(cb) {
+    		console.log('checkFileList');
+    		db.getFileList(function(err, fileList) {
+    			if (fileList && fileList.length && fileList[0] === 'someotherstuff') {
+    				cb()
+    			} else {
+    				console.log(err, fileList);
+    				cb('checkFileList --- file list is WRONG MOFO');
+    			}
+    		});
+    	};
+    </script>
+</body>
+</html>
