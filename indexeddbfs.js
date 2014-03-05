@@ -535,13 +535,13 @@ IndexedDBFs.prototype._processQueue = function(filename) {
 
   if (this._fileOperationIds[filename].length) {
     var op = this._fileOperationIds[filename].shift();
-    
+    var cb = op.cb;
+
     this._fileOperations.get(op.guid, function(operation) {
-      operation.cb = op.cb;
 
       operation.args.push(function() {
         var args = [].slice.call(arguments);
-        operation.cb && operation.cb.apply(null, args);
+        cb && cb.apply(null, args);
 
         requestAnimationFrame(function() {
           self._processQueue(filename);
@@ -552,6 +552,8 @@ IndexedDBFs.prototype._processQueue = function(filename) {
 
       self[operation.operation].apply(self, operation.args);
       delete operation.args;
+      delete operation;
+      delete op;
     });
   } else {
     this._fileOperationIds[filename] = null;
