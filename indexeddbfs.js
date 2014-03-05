@@ -327,7 +327,9 @@ IndexedDBFs.prototype._setBytes = function(filename, buffer, startPos, cb) {
   var endChunk = Math.floor((startPos + buffer.byteLength) / this.chunkSize);
   var currentChunk = startChunk - 1;
 
-  this.setMaxByte(filename, startPos + buffer.byteLength);
+  this.setMaxByte(filename, startPos + buffer.byteLength, function() {
+    process();
+  });
 
   function process() {
     currentChunk++;
@@ -386,8 +388,6 @@ IndexedDBFs.prototype._setBytes = function(filename, buffer, startPos, cb) {
       }
     });
   }
-
-  process();
 };
 
 IndexedDBFs.prototype.getBytes = function(filename, startPos, endPos, cb) {
