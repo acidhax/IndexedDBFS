@@ -1,4 +1,4 @@
-
+var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
 /**
  * IndexedDBFs - a simple Javascript filesystem that allows you to store strings, blobs, arrays, array buffers and
  * access them like long-term storage.
@@ -514,7 +514,9 @@ IndexedDBFs.prototype._processQueue = function(filename) {
       var args = [].slice.call(arguments);
       operation.cb && operation.cb.apply(null, args);
 
-      self._processQueue(filename);
+      requestAnimationFrame(function() {
+        self._processQueue(filename);
+      });
     })
 
     this[operation.operation].apply(this, operation.args)
